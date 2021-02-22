@@ -11,6 +11,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 
+import java.util.Collection;
+import java.util.List;
+
 @Controller
 public class RoomController {
 
@@ -21,9 +24,10 @@ public class RoomController {
         this.roomRepository = roomRepository;
     }
 
-    @GetMapping("/index")
+    @GetMapping(value = {"/index","/"})
     public String showRoomList(Model model) {
         model.addAttribute("rooms", roomRepository.findAll());
+        model.addAttribute("roomsLength",((Collection<?>) roomRepository.findAll()).size());
         return "index";
     }
 
@@ -68,5 +72,12 @@ public class RoomController {
         roomRepository.delete(room);
 
         return "redirect:/index";
+    }
+
+    @GetMapping("/room/{id}")
+    public String findRoomId(@PathVariable("id") long id, Model model) {
+        Room room = roomRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Invalid room Id:" + id));
+        model.addAttribute("room",room);
+        return "room";
     }
 }

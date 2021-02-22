@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.1/css/bulma.min.css">
+</head>
+<body>
+<h1 th:text="'Welcome to '+${room.name}"></h1>
+<div class="container">
+    <div class="column">
+        <textarea id="shared-doc" class="textarea is-primary" placeholder="Dicussion Text Here" th:text="${room.text}"></textarea>
+    </div>
+</div>
+<a class="button" href="/index">go back</a>
+</body>
+<script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+<script th:inline="javascript">
+/*<![CDATA[*/
+var id = [[${room.id}]];
+var name = [[${room.name}]];
+/*]]>*/
+var stompClient = null;
+var username = null;
+var socket = null;
+
+function connect(event) {
+    username = "random name generator here";
+
+    if(username) {
+         socket = new SockJS('/chat');
+         socket.onopen = function() {
+             console.log('open');
+             socket.send('test');
+         };
+         stompClient = Stomp.over(socket);
+
+        stompClient.connect({}, onConnected, onError);
+    }
+    event.preventDefault();
+}
+
+function onError(error) {
+    console.log(error)
+}
+
+function onConnected() {
+    // Subscribe to the Public Topic
+    stompClient.subscribe('/topic/public/'+id, onMessageReceived);
+}
+function onMessageReceived(payload) {
+console.log("message")
+console.log(payload)
+var documentContent = document.getElementById("shared-doc");
+documentContent.value = JSON.parse(payload.body).content
+
+}
+
+function send(event) {
+    console.log("send")
+    console.log(document.getElementById("shared-doc").value)
+    var documentContent = document.getElementById("shared-doc").value;
+
+    if(documentContent && stompClient) {
+        var chatMessage = {
+            sender: username,
+            content: documentContent,
+            roomId: id,
+            roomName: name
+        };
+
+        stompClient.send("/room/document/"+id, {}, JSON.stringify(chatMessage));
+    }
+    event.preventDefault();
+}
+
+<!--document.querySelector("#shared-doc").addEventListener("blur",send,true);-->
+document.querySelector("#shared-doc").addEventListener("input",send,false);
+window.onload = (e) => connect(e);
+</script>
+</html>
