@@ -88,13 +88,20 @@ function send(event) {
 
         stompClient.send("/room/document/"+id, {}, JSON.stringify(chatMessage));
     }
-    event.preventDefault();
+    //event.preventDefault();
 }
-
-document.querySelector("#shared-doc").addEventListener("input",send,false);
-<!--setInterval(function(){-->
-<!--    send()-->
-<!--}, 30000)-->
+var delay = (function(){
+    var timer = 0;
+    return function(callback, ms){
+        clearTimeout(timer);
+        timer = setTimeout(callback,ms);
+    };
+})();
+document.getElementById("shared-doc").addEventListener("input",e => {
+        delay(function(){
+            send(e.target.innerHTML)
+        },1500)
+});
 window.onload = (e) => connect(e);
 </script>
 </html>
