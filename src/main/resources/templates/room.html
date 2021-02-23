@@ -24,6 +24,7 @@ var name = [[${room.name}]];
 var stompClient = null;
 var username = null;
 var socket = null;
+var lastChange = 0;
 
 function connect(event) {
     username = "random name generator here";
@@ -50,14 +51,23 @@ function onConnected() {
     stompClient.subscribe('/topic/public/'+id, onMessageReceived);
 }
 function onMessageReceived(payload) {
-console.log("message")
-console.log(payload)
-var documentContent = document.getElementById("shared-doc");
-// Do some postprocessing of the content
-savedText = JSON.parse(payload.body).content
-incomingChange = documentContent.value
-console.log("savedText", savedText)
-console.log("incomingChange", incomingChange)
+    console.log("message")
+    console.log(payload)
+    var documentContent = document.getElementById("shared-doc");
+    // Do some postprocessing of the content
+    var incomingJson = JSON.parse(payload.body)
+    savedText = incomingJson.content
+    incomingTime = incomingJson.time
+    incomingChange = documentContent.value
+    console.log("savedText", savedText)
+    console.log("incomingChange", incomingChange)
+    if (incomingTime > lastChange){
+        // detect conflict and resolve
+        // if no conflict detected, merge them
+        documentContent.value = savedText
+    } else {
+        documentContent.value = incomingChange +"\n"+savedText
+    }
 
 }
 
@@ -71,8 +81,10 @@ function send(event) {
             sender: username,
             content: documentContent,
             roomId: id,
-            roomName: name
+            roomName: name,
+            time: Date.now()
         };
+        lastChange = Date.now();
 
         stompClient.send("/room/document/"+id, {}, JSON.stringify(chatMessage));
     }
