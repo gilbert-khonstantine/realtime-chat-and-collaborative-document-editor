@@ -76,7 +76,10 @@ function send(event) {
 }
 
 <!--document.querySelector("#shared-doc").addEventListener("blur",send,true);-->
-document.querySelector("#shared-doc").addEventListener("input",send,false);
+<!--document.querySelector("#shared-doc").addEventListener("input",send,false);-->
+setInterval(function(){
+    send()
+}, 30000)
 window.onload = (e) => connect(e);
 </script>
 </html>
