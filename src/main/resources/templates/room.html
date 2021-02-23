@@ -53,7 +53,11 @@ function onMessageReceived(payload) {
 console.log("message")
 console.log(payload)
 var documentContent = document.getElementById("shared-doc");
-documentContent.value = JSON.parse(payload.body).content
+// Do some postprocessing of the content
+savedText = JSON.parse(payload.body).content
+incomingChange = documentContent.value
+console.log("savedText", savedText)
+console.log("incomingChange", incomingChange)
 
 }
 
@@ -75,11 +79,10 @@ function send(event) {
     event.preventDefault();
 }
 
-<!--document.querySelector("#shared-doc").addEventListener("blur",send,true);-->
-<!--document.querySelector("#shared-doc").addEventListener("input",send,false);-->
-setInterval(function(){
-    send()
-}, 30000)
+document.querySelector("#shared-doc").addEventListener("input",send,false);
+<!--setInterval(function(){-->
+<!--    send()-->
+<!--}, 30000)-->
 window.onload = (e) => connect(e);
 </script>
 </html>
