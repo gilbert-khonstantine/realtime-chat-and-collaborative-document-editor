@@ -9,7 +9,7 @@
 <h1 th:text="'Welcome to '+${room.name}"></h1>
 <div class="container">
     <div class="column">
-        <textarea id="shared-doc" class="textarea is-primary" placeholder="Dicussion Text Here" onfocus="textAreaAdjust(this)" onkeyup="textAreaAdjust(this)" th:text="${room.text}"></textarea>
+        <textarea autofocus id="shared-doc" class="textarea is-primary" placeholder="Dicussion Text Here" onfocus="textAreaAdjust(this)" onkeyup="textAreaAdjust(this)" th:text="${room.text}"></textarea>
     </div>
 </div>
 <a class="button" href="/index">go back</a>
@@ -53,6 +53,7 @@ function onConnected() {
 function onMessageReceived(payload) {
     var documentContent = document.getElementById("shared-doc");
     // Do some postprocessing of the content
+    var currentPos = documentContent.selectionStart;
     var incomingJson = JSON.parse(payload.body)
     savedText = incomingJson.content
     incomingTime = incomingJson.time
@@ -72,6 +73,7 @@ function onMessageReceived(payload) {
     }
 
     // Fix the cursor position in the text box
+    documentContent.setSelectionRange(currentPos, currentPos);
 
 }
 
