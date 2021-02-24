@@ -57,7 +57,7 @@ function onMessageReceived(payload) {
     savedText = incomingJson.content
     incomingTime = incomingJson.time
     incomingChange = documentContent.value
-    if (Math.abs(incomingTime - lastChange) < 3000){
+    if (Math.abs(incomingTime - lastChange) < 10000){
         // add in both changes
         // currently does not support deletion. So if you want to delete, only 1 person delete at a time
         var unifiedString = ""
@@ -65,9 +65,9 @@ function onMessageReceived(payload) {
             unifiedString = unifiedString + part.value
         })
         documentContent.value = unifiedString
-    } else if (incomingTime - lastChange > 3000) {
+    } else if (incomingTime - lastChange > 10000) {
         documentContent.value = savedText
-    } else if (incomingTime - lastChange < -3000){
+    } else if (incomingTime - lastChange < -10000){
         documentContent.value = incomingChange
     }
 }
