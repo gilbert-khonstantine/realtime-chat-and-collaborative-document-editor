@@ -95,7 +95,6 @@ function send(event) {
             roomName: name,
             time: Date.now()
         };
-        lastChange = Date.now();
 
         stompClient.send("/room/document/"+id, {}, JSON.stringify(chatMessage));
     }
@@ -112,6 +111,7 @@ document.getElementById("shared-doc").addEventListener("keydown",e => {
         delay(function(){
             send(e.target.innerHTML)
         },1000)
+        lastChange = Date.now();
 });
 function textAreaAdjust(element) {
   element.style.height = "1px";
