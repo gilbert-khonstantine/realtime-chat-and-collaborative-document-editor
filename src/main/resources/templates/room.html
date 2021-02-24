@@ -70,7 +70,6 @@ function onMessageReceived(payload) {
     } else if (incomingTime - lastChange < -20000){
         documentContent.value = incomingChange
     }
-
 }
 
 function send(event) {
@@ -88,7 +87,7 @@ function send(event) {
 
         stompClient.send("/room/document/"+id, {}, JSON.stringify(chatMessage));
     }
-    //event.preventDefault();
+    event.preventDefault();
 }
 var delay = (function(){
     var timer = 0;
