@@ -56,7 +56,7 @@ function onConnected() {
     // Subscribe to the Public Topic
     stompClient.subscribe('/topic/public/'+id, onMessageReceived);
 }
-const TIME_DIFF = 12500
+const TIME_DIFF = 10000
 function onMessageReceived(payload) {
     var documentContent = document.getElementById("shared-doc");
     // Do some postprocessing of the content
