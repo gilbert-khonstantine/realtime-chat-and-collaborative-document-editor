@@ -39,7 +39,7 @@ function connect(event) {
 
         stompClient.connect({}, onConnected, onError);
     }
-    event.preventDefault();
+    // event.preventDefault();
 }
 
 function onError(error) {
@@ -57,7 +57,7 @@ function onMessageReceived(payload) {
     savedText = incomingJson.content
     incomingTime = incomingJson.time
     incomingChange = documentContent.value
-    if (Math.abs(incomingTime - lastChange) < 20000){
+    if (Math.abs(incomingTime - lastChange) < 3000){
         // add in both changes
         // currently does not support deletion. So if you want to delete, only 1 person delete at a time
         var unifiedString = ""
@@ -65,9 +65,9 @@ function onMessageReceived(payload) {
             unifiedString = unifiedString + part.value
         })
         documentContent.value = unifiedString
-    } else if (incomingTime - lastChange > 20000) {
+    } else if (incomingTime - lastChange > 3000) {
         documentContent.value = savedText
-    } else if (incomingTime - lastChange < -20000){
+    } else if (incomingTime - lastChange < -3000){
         documentContent.value = incomingChange
     }
 }
@@ -75,7 +75,7 @@ function onMessageReceived(payload) {
 function send(event) {
     var documentContent = document.getElementById("shared-doc").value;
 
-    if(documentContent && stompClient) {
+    if(stompClient) {
         var chatMessage = {
             sender: username,
             content: documentContent,
@@ -87,7 +87,7 @@ function send(event) {
 
         stompClient.send("/room/document/"+id, {}, JSON.stringify(chatMessage));
     }
-    event.preventDefault();
+    // event.preventDefault();
 }
 var delay = (function(){
     var timer = 0;
@@ -96,10 +96,10 @@ var delay = (function(){
         timer = setTimeout(callback,ms);
     };
 })();
-document.getElementById("shared-doc").addEventListener("input",e => {
+document.getElementById("shared-doc").addEventListener("keydown",e => {
         delay(function(){
             send(e.target.innerHTML)
-        },1500)
+        },1000)
 });
 window.onload = (e) => connect(e);
 </script>
