@@ -29,4 +29,12 @@ public class ChatMessage {
     public void setContent(String content) {
         this.content = content;
     }
+
+    public long getTime() {
+        return time;
+    }
+
+    public void setTime(long time) {
+        this.time = time;
+    }
 }

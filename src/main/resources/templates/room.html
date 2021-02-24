@@ -16,6 +16,7 @@
 </body>
 <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jsdiff/5.0.0/diff.min.js"></script>
 <script th:inline="javascript">
 /*<![CDATA[*/
 var id = [[${room.id}]];
@@ -25,7 +26,6 @@ var stompClient = null;
 var username = null;
 var socket = null;
 var lastChange = 0;
-
 function connect(event) {
     username = "random name generator here";
 
@@ -51,29 +51,29 @@ function onConnected() {
     stompClient.subscribe('/topic/public/'+id, onMessageReceived);
 }
 function onMessageReceived(payload) {
-    console.log("message")
-    console.log(payload)
     var documentContent = document.getElementById("shared-doc");
     // Do some postprocessing of the content
     var incomingJson = JSON.parse(payload.body)
     savedText = incomingJson.content
     incomingTime = incomingJson.time
     incomingChange = documentContent.value
-    console.log("savedText", savedText)
-    console.log("incomingChange", incomingChange)
-    if (incomingTime > lastChange){
-        // detect conflict and resolve
-        // if no conflict detected, merge them
+    if (Math.abs(incomingTime - lastChange) < 20000){
+        // add in both changes
+        // currently does not support deletion. So if you want to delete, only 1 person delete at a time
+        var unifiedString = ""
+        Diff.diffChars(incomingChange, savedText).forEach(part=>{
+            unifiedString = unifiedString + part.value
+        })
+        documentContent.value = unifiedString
+    } else if (incomingTime - lastChange > 20000) {
         documentContent.value = savedText
-    } else {
-        documentContent.value = savedText
+    } else if (incomingTime - lastChange < -20000){
+        documentContent.value = incomingChange
     }
 
 }
 
 function send(event) {
-    console.log("send")
-    console.log(document.getElementById("shared-doc").value)
     var documentContent = document.getElementById("shared-doc").value;
 
     if(documentContent && stompClient) {
