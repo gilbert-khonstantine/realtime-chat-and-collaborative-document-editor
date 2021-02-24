@@ -2,17 +2,23 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>Collaborative Document</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.1/css/bulma.min.css">
 </head>
 <body>
-<h1 th:text="'Welcome to '+${room.name}"></h1>
-<div class="container">
-    <div class="column">
-        <textarea autofocus id="shared-doc" class="textarea is-primary" placeholder="Dicussion Text Here" onfocus="textAreaAdjust(this)" onkeyup="textAreaAdjust(this)" th:text="${room.text}"></textarea>
+<div class="containter">
+    <div class="columns is-mobile is-centered">
+        <div class="column is-half">
+            <h1 class="title is-3" th:text="'Welcome to '+${room.name}"></h1>
+            <div class="block">
+                <textarea autofocus id="shared-doc" class="textarea is-primary" placeholder="Dicussion Text Here" onfocus="textAreaAdjust(this)" onkeyup="textAreaAdjust(this)" th:text="${room.text}"></textarea>
+            </div>
+            <a class="button is-primary" href="/index">go back</a>
+        </div>
     </div>
 </div>
-<a class="button" href="/index">go back</a>
+
 </body>
 <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>

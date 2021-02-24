@@ -7,16 +7,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.1/css/bulma.min.css">
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.4.1/css/all.css" integrity="sha384-5sAR7xN1Nv6T6+dT2mhtzEpVJvfS3NScPQTrOxhwjIuvcA67KV2R5Jz6kr4abQsz" crossorigin="anonymous">
-    <link rel="stylesheet" href="../css/shards.min.css">
 </head>
 <body>
-<div th:switch="${roomsLength}" class="container my-5">
-    <div class="container">
-        <div class="columns">
-            <h2 th:case="0">No rooms yet! Feel free to create one</h2>
-            <div th:case="*" class="content is-medium">
-                <h2>Available Chat Rooms</h2>
-                <table class="table">
+<div th:switch="${roomsLength}" class="container">
+    <div class="columns is-mobile is-centered is-vcentered">
+        <div class="column is-half">
+            <div class="block" th:case="0">
+            <h1 class="title is-3">No rooms yet!</h1>
+            <p class="content is-medium">Feel free to create one</p>
+            </div>
+            <div th:case="*" class="block">
+                <h2 class="title is-3">Chat Rooms</h2>
+                <table class="table is-striped is-fullwidth">
                     <thead>
                     <tr>
                         <th>Name</th>
@@ -26,18 +28,16 @@
                     </thead>
                     <tbody>
                     <tr th:each="room : ${rooms}">
-                        <td><a th:href="@{/room/{id}(id=${room.id})}"><p  th:text="${room.name}"></p></a></td>
-                        <td><a th:href="@{/edit/{id}(id=${room.id})}" class="button">Edit</a></td>
-                        <td><a th:href="@{/delete/{id}(id=${room.id})}" class="button">-</a></td>
+                        <td><a th:href="@{/room/{id}(id=${room.id})}"><p  class="content is-large" th:text="${room.name}"></p></a></td>
+                        <td><a th:href="@{/edit/{id}(id=${room.id})}" class="button is-info">Edit</a></td>
+                        <td><a th:href="@{/delete/{id}(id=${room.id})}" class="button is-danger">-</a></td>
                     </tr>
                     </tbody>
                 </table>
             </div>
-        </div>
-        <div class="columns">
-            <div class="column">
-                <p class="my-5"><a href="/signup" class="button">Add a room</a></p>
-            </div>
+                <div class="block">
+                    <a href="/signup" class="button is-primary">Add a room</a>
+                </div>
         </div>
     </div>
 </div>
