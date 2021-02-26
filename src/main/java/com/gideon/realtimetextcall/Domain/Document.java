@@ -1,13 +1,15 @@
 package com.gideon.realtimetextcall.Domain;
 
-public class ChatMessage {
+public class Document {
+    private long time;
     private String sender;
     private String content;
-    public ChatMessage(){}
+    public Document(){}
 
-    public ChatMessage(String sender, String content){
+    public Document(String sender, String content, long time){
         this.sender = sender;
         this.content = content;
+        this.time = time;
     }
 
     public String getSender() {
@@ -24,5 +26,13 @@ public class ChatMessage {
 
     public void setContent(String content) {
         this.content = content;
+    }
+
+    public long getTime() {
+        return time;
+    }
+
+    public void setTime(long time) {
+        this.time = time;
     }
 }

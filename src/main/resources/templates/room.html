@@ -5,6 +5,17 @@
     <title>Collaborative Document</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.1/css/bulma.min.css">
+    <style>
+            div.chatBox {
+                margin:5px;
+                padding:5px;
+                width: 500px;
+                height: 650px;
+                overflow: auto;
+                text-align:justify;
+                border:1px solid LightGray;
+            }
+       </style>
 </head>
 <body>
 <div class="containter">
@@ -15,6 +26,21 @@
                 <textarea autofocus id="shared-doc" class="textarea is-primary" placeholder="Dicussion Text Here" onfocus="textAreaAdjust(this)" onkeyup="textAreaAdjust(this)" th:text="${room.text}"></textarea>
             </div>
             <a class="button is-primary" href="/index">go back</a>
+        </div>
+        <div class="column is-half">
+            <div class="container chatBox" id="chat-messages">
+
+            </div>
+            <form class="form-inline" onsubmit="addChat(event)">
+                <div class="field has-addons">
+                    <div class="control">
+                        <input class="input is-info" id="chat-message" type="text" placeholder="Type message here...">
+                    </div>
+                    <div class="control">
+                        <button id="send-message" class="button is-info" type="submit">Send</button>
+                    </div>
+                </div>
+            </form>
         </div>
     </div>
 </div>
@@ -33,7 +59,7 @@ var username = null;
 var socket = null;
 var lastChange = 0;
 function connect(event) {
-    username = "random name generator here";
+    username = prompt("Please enter your name:");
 
     if(username) {
          socket = new SockJS('/chat');
@@ -54,10 +80,52 @@ function onError(error) {
 
 function onConnected() {
     // Subscribe to the Public Topic
-    stompClient.subscribe('/topic/public/'+id, onMessageReceived);
+    stompClient.subscribe('/topic/chat/'+id, onMessageReceived);
+    stompClient.subscribe('/topic/public/'+id, onDocumentReceived);
+
 }
 const TIME_DIFF = 10000
-function onMessageReceived(payload) {
+
+function addChat(event, receive){
+    chatMessages = document.getElementById("chat-messages");
+    console.log(event)
+    if(receive){
+        var message = JSON.parse(event.body)
+        chatMessages.innerHTML += `<div class="card">
+      <div class="card-content">
+        <p class="content is-medium">`
+          +message.content+
+        `</p>
+        <p class="subtitle is-size-6 has-text-right">`+
+          "- "+message.sender+
+        `</p>
+      </div>
+      </div><br/>`
+    }
+    else {
+        event.preventDefault();
+        message = document.getElementById("chat-message").value;
+        sendMessage(message);
+        document.getElementById("chat-message").value = ""
+  }
+}
+
+function onMessageReceived(payload){
+    addChat(payload, true)
+}
+
+function sendMessage(message){
+    var chatContent = message;
+    if(stompClient) {
+        var chatMessage = {
+            sender: username,
+            content: chatContent
+        };
+        stompClient.send("/room/chat/"+id, {}, JSON.stringify(chatMessage));
+    }
+}
+
+function onDocumentReceived(payload) {
     var documentContent = document.getElementById("shared-doc");
     // Do some postprocessing of the content
     var currentPos = documentContent.selectionStart;
@@ -84,11 +152,11 @@ function onMessageReceived(payload) {
 
 }
 
-function send(event) {
+function sendDocument(event) {
     var documentContent = document.getElementById("shared-doc").value;
 
     if(stompClient) {
-        var chatMessage = {
+        var chatDocument = {
             sender: username,
             content: documentContent,
             roomId: id,
@@ -96,9 +164,8 @@ function send(event) {
             time: Date.now()
         };
 
-        stompClient.send("/room/document/"+id, {}, JSON.stringify(chatMessage));
+        stompClient.send("/room/document/"+id, {}, JSON.stringify(chatDocument));
     }
-    // event.preventDefault();
 }
 var delay = (function(){
     var timer = 0;
@@ -108,8 +175,9 @@ var delay = (function(){
     };
 })();
 document.getElementById("shared-doc").addEventListener("keydown",e => {
+        sendDocument(e)
         delay(function(){
-            send(e.target.innerHTML)
+            sendDocument(e.target.innerHTML)
         },1000)
         lastChange = Date.now();
 });
