@@ -107,7 +107,8 @@ function addChat(event, receive){
         message = document.getElementById("chat-message").value;
         sendMessage(message);
         document.getElementById("chat-message").value = ""
-  }
+   }
+   chatMessages.scrollTop = chatMessages.scrollHeight;
 }
 
 function onMessageReceived(payload){
@@ -116,7 +117,7 @@ function onMessageReceived(payload){
 
 function sendMessage(message){
     var chatContent = message;
-    if(stompClient) {
+    if(stompClient && /\S/.test(chatContent) ) {
         var chatMessage = {
             sender: username,
             content: chatContent
