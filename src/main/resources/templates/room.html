@@ -175,7 +175,6 @@ var delay = (function(){
     };
 })();
 document.getElementById("shared-doc").addEventListener("keydown",e => {
-        sendDocument(e)
         delay(function(){
             sendDocument(e.target.innerHTML)
         },1000)
