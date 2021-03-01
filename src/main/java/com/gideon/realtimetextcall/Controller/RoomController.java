@@ -1,9 +1,15 @@
 package com.gideon.realtimetextcall.Controller;
 import javax.validation.Valid;
 
+import com.gideon.realtimetextcall.Domain.Document;
 import com.gideon.realtimetextcall.Domain.Room;
 import com.gideon.realtimetextcall.Repository.RoomRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.messaging.handler.annotation.DestinationVariable;
+import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.handler.annotation.Payload;
+import org.springframework.messaging.handler.annotation.SendTo;
+import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -13,6 +19,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 @Controller
 public class RoomController {
@@ -79,5 +86,11 @@ public class RoomController {
         Room room = roomRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Invalid room Id:" + id));
         model.addAttribute("room",room);
         return "room";
+    }
+
+    @MessageMapping("/room/{roomId}")
+    @SendTo("/topic/room/{roomId}")
+    public Map<String, String> register(@Payload Map<String, String> payload, @DestinationVariable String roomId, SimpMessageHeaderAccessor headerAccessor) {
+        return payload;
     }
 }

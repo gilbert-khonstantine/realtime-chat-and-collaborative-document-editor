@@ -25,7 +25,7 @@
             <div class="block">
                 <textarea autofocus id="shared-doc" class="textarea is-primary" placeholder="Dicussion Text Here" onfocus="textAreaAdjust(this)" onkeyup="textAreaAdjust(this)" th:text="${room.text}"></textarea>
             </div>
-            <a class="button is-primary" href="/index">go back</a>
+            <a class="button is-primary" onclick="disconnect()" href="/index">go back</a>
         </div>
         <div class="column is-half">
             <div class="container chatBox" id="chat-messages">
@@ -71,7 +71,32 @@ function connect(event) {
 
         stompClient.connect({}, onConnected, onError);
     }
+     socket.onclose = function() {
+     console.log('close');
+    };
     // event.preventDefault();
+}
+
+function userInOut(event){
+    var payload = JSON.parse(event.body)
+    console.log(payload)
+    console.log(payload.action == "connect")
+    console.log(payload.username)
+    chatMessages = document.getElementById("chat-messages");
+    if (payload.action == "connect"){
+    chatMessages.innerHTML +=
+        `<p class="subtitle is-size-6 has-text-centered">`+ payload.username+" has joined the room"+
+        `</p><br/>`
+    } else {
+        chatMessages.innerHTML +=
+        `<p class="subtitle is-size-6 has-text-centered">`+ payload.username+" has left the room"+
+        `</p><br/>`
+    }
+}
+
+function disconnect(){
+    sendEntryOrLeave("disconnect")
+    socket.close();
 }
 
 function onError(error) {
@@ -82,7 +107,8 @@ function onConnected() {
     // Subscribe to the Public Topic
     stompClient.subscribe('/topic/chat/'+id, onMessageReceived);
     stompClient.subscribe('/topic/public/'+id, onDocumentReceived);
-
+    stompClient.subscribe('/topic/room/'+id, userInOut);
+    sendEntryOrLeave("connect")
 }
 const TIME_DIFF = 10000
 
@@ -124,6 +150,25 @@ function sendMessage(message){
         };
         stompClient.send("/room/chat/"+id, {}, JSON.stringify(chatMessage));
     }
+}
+
+function onEntryOrLeave(event){
+    let payload = JSON.parse(event.body)
+    if (payload.action == "connect"){
+        userInOut("connect")
+        console.log(payload.username + " is entering ")
+    } else {
+        userInOut("disconnect")
+        console.log(payload.username+ " is leaving")
+    }
+}
+
+function sendEntryOrLeave(event){
+    var actionJson = {
+        username: username,
+        action: event
+    }
+    stompClient.send("/room/room/"+id, {}, JSON.stringify(actionJson))
 }
 
 function onDocumentReceived(payload) {
@@ -186,5 +231,9 @@ function textAreaAdjust(element) {
   element.style.height = (25+element.scrollHeight)+"px";
 }
 window.onload = (e) => connect(e);
+window.addEventListener('beforeunload', (event) => {
+  event.preventDefault();
+  socket.close()
+});
 </script>
 </html>
