@@ -49,6 +49,9 @@
 <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jsdiff/5.0.0/diff.min.js"></script>
+<script type="text/javascript" th:src="@{/js/document.js}"></script>
+<script type="text/javascript" th:src="@{/js/room.js}"></script>
+<script type="text/javascript" th:src="@{/js/chat.js}"></script>
 <script th:inline="javascript">
 /*<![CDATA[*/
 var id = [[${room.id}]];
@@ -77,23 +80,6 @@ function connect(event) {
     // event.preventDefault();
 }
 
-function userInOut(event){
-    var payload = JSON.parse(event.body)
-    console.log(payload)
-    console.log(payload.action == "connect")
-    console.log(payload.username)
-    chatMessages = document.getElementById("chat-messages");
-    if (payload.action == "connect"){
-    chatMessages.innerHTML +=
-        `<p class="subtitle is-size-6 has-text-centered">`+ payload.username+" has joined the room"+
-        `</p><br/>`
-    } else {
-        chatMessages.innerHTML +=
-        `<p class="subtitle is-size-6 has-text-centered">`+ payload.username+" has left the room"+
-        `</p><br/>`
-    }
-}
-
 function disconnect(){
     sendEntryOrLeave("disconnect")
     socket.close();
@@ -112,128 +98,10 @@ function onConnected() {
 }
 const TIME_DIFF = 10000
 
-function addChat(event, receive){
-    chatMessages = document.getElementById("chat-messages");
-    console.log(event)
-    if(receive){
-        var message = JSON.parse(event.body)
-        chatMessages.innerHTML += `<div class="card">
-      <div class="card-content">
-        <p class="content is-medium">`
-          +message.content+
-        `</p>
-        <p class="subtitle is-size-6 has-text-right">`+
-          "- "+message.sender+
-        `</p>
-      </div>
-      </div><br/>`
-    }
-    else {
-        event.preventDefault();
-        message = document.getElementById("chat-message").value;
-        sendMessage(message);
-        document.getElementById("chat-message").value = ""
-   }
-   chatMessages.scrollTop = chatMessages.scrollHeight;
-}
-
-function onMessageReceived(payload){
-    addChat(payload, true)
-}
-
-function sendMessage(message){
-    var chatContent = message;
-    if(stompClient && /\S/.test(chatContent) ) {
-        var chatMessage = {
-            sender: username,
-            content: chatContent
-        };
-        stompClient.send("/room/chat/"+id, {}, JSON.stringify(chatMessage));
-    }
-}
-
-function onEntryOrLeave(event){
-    let payload = JSON.parse(event.body)
-    if (payload.action == "connect"){
-        userInOut("connect")
-        console.log(payload.username + " is entering ")
-    } else {
-        userInOut("disconnect")
-        console.log(payload.username+ " is leaving")
-    }
-}
-
-function sendEntryOrLeave(event){
-    var actionJson = {
-        username: username,
-        action: event
-    }
-    stompClient.send("/room/room/"+id, {}, JSON.stringify(actionJson))
-}
-
-function onDocumentReceived(payload) {
-    var documentContent = document.getElementById("shared-doc");
-    // Do some postprocessing of the content
-    var currentPos = documentContent.selectionStart;
-    var incomingJson = JSON.parse(payload.body)
-    savedText = incomingJson.content
-    incomingTime = incomingJson.time
-    incomingChange = documentContent.value
-    if (Math.abs(incomingTime - lastChange) < TIME_DIFF){
-        // add in both changes
-        // currently does not support deletion. So if you want to delete, only 1 person delete at a time
-        var unifiedString = ""
-        Diff.diffChars(incomingChange, savedText).forEach(part=>{
-            unifiedString = unifiedString + part.value
-        })
-        documentContent.value = unifiedString
-    } else if (incomingTime - lastChange > TIME_DIFF) {
-        documentContent.value = savedText
-    } else if (incomingTime - lastChange < -TIME_DIFF){
-        documentContent.value = incomingChange
-    }
-
-    // Fix the cursor position in the text box
-    documentContent.setSelectionRange(currentPos, currentPos);
-
-}
-
-function sendDocument(event) {
-    var documentContent = document.getElementById("shared-doc").value;
-
-    if(stompClient) {
-        var chatDocument = {
-            sender: username,
-            content: documentContent,
-            roomId: id,
-            roomName: name,
-            time: Date.now()
-        };
-
-        stompClient.send("/room/document/"+id, {}, JSON.stringify(chatDocument));
-    }
-}
-var delay = (function(){
-    var timer = 0;
-    return function(callback, ms){
-        clearTimeout(timer);
-        timer = setTimeout(callback,ms);
-    };
-})();
-document.getElementById("shared-doc").addEventListener("keydown",e => {
-        delay(function(){
-            sendDocument(e.target.innerHTML)
-        },1000)
-        lastChange = Date.now();
-});
-function textAreaAdjust(element) {
-  element.style.height = "1px";
-  element.style.height = (25+element.scrollHeight)+"px";
-}
 window.onload = (e) => connect(e);
 window.addEventListener('beforeunload', (event) => {
   event.preventDefault();
-  socket.close()
+  disconnect()
 });
 </script>
 </html>
